@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -x
-
 CONFD=/etc/syslog-ng/conf.d
 TEMPLATES=/etc/syslog-ng/templates
 
