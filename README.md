@@ -16,7 +16,7 @@ Destinations can be enabled or disabled with environment variables specified wit
 
 ### Environment variables
 
-* `DISABLE_LOCAL` - when this is set to anything at all syslog-ng will stop logging to `/var/log/messages`
+* `ENABLE_LOCAL` - set `True` to log to `/var/log/messages` in container (default: `False`)
 * `SQL_HOST` - the IP or domain of the destination SQL server
 * `SQL_PORT` - the port the destination SQL server runs on (defaults to `3306` if not specified)
 * `SQL_USER` - the user name used to access the destination SQL server
