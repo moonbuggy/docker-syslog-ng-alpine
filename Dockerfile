@@ -1,4 +1,4 @@
-FROM moonbuggy2000/alpine-s6:3.10.3
+FROM moonbuggy2000/alpine-s6:3.12.3
 
 RUN apk add --no-cache \
 		libdbi-drivers \
