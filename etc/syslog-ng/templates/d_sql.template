@@ -18,4 +18,3 @@ log {
 	source(s_network);
 	destination(d_sql);
 };
-

@@ -1,0 +1,6 @@
+.build_data
+*.bak
+_dummyfile
+.qemu_static
+.include
+__pycache__

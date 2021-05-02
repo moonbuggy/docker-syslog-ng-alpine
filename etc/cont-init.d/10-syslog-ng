@@ -1,33 +1,30 @@
 #!/usr/bin/with-contenv /bin/sh
 
-CONFD=/etc/syslog-ng/conf.d
-TEMPLATES=/etc/syslog-ng/templates
+CONFD='/etc/syslog-ng/conf.d'
+TEMPLATES='/etc/syslog-ng/templates'
 
 # enable and configure the SQL destination if SQL_* environment variables are set
 if $(env | grep -q SQL); then
+	[ -z ${SQL_PORT+set} ] && SQL_PORT='3306'
 
-	if [ -z ${SQL_PORT+set} ]; then
-		SQL_PORT=3306
-	fi
+	cp -f "${TEMPLATES}/d_sql.template" "${CONFD}/d_sql.conf"
 
-	cp -f ${TEMPLATES}/d_sql.template ${CONFD}/d_sql.conf
-
-	sed -i "s/SQL_HOST/${SQL_HOST}/" ${CONFD}/d_sql.conf
-	sed -i "s/SQL_PORT/${SQL_PORT}/" ${CONFD}/d_sql.conf
-	sed -i "s/SQL_USER/${SQL_USER}/" ${CONFD}/d_sql.conf
-	sed -i "s/SQL_PASSWORD/${SQL_PASSWORD}/" ${CONFD}/d_sql.conf
-	sed -i "s/SQL_DATABASE/${SQL_DATABASE}/" ${CONFD}/d_sql.conf
+	sed -i "${CONFD}/d_sql.conf" \
+		-e "s/SQL_HOST/${SQL_HOST}/" \
+		-e "s/SQL_PORT/${SQL_PORT}/" \
+		-e "s/SQL_USER/${SQL_USER}/" \
+		-e "s/SQL_PASSWORD/${SQL_PASSWORD}/" \
+		-e "s/SQL_DATABASE/${SQL_DATABASE}/"
 
 # otherwise make sure the SQL destination is disabled
-elif [ -f ${CONFD}/d_sql.conf ]; then
-	rm -f ${CONFD}/d_sql.conf
+elif [ -f "${CONFD}/d_sql.conf" ]; then
+	rm -f "${CONFD}/d_sql.conf" >/dev/null 2>&1
 fi
-
 
 DO_ENABLE_LOCAL=false
 
 if [ ! -z ${ENABLE_LOCAL+set} ]; then
-	case $ENABLE_LOCAL in
+	case "${ENABLE_LOCAL}" in
 		true|True|TRUE|yes|Yes|YES|1|on|On|ON)
 			DO_ENABLE_LOCAL=true
 			;;
@@ -37,8 +34,8 @@ fi
 # enable the local destination if the appropriate environment variable is set
 if ${DO_ENABLE_LOCAL}; then
 	echo "Logging to /var/log/messages ENABLED."
-	cp --remove-destination ${TEMPLATES}/d_local.template ${CONFD}/d_local.conf
+	cp -f "${TEMPLATES}/d_local.template" "${CONFD}/d_local.conf"
 else # otherwise make sure it's disabled
 	echo "Logging to /var/log/messages DISABLED."
-	rm -f ${CONFD}/d_local.conf
+	rm -f "${CONFD}/d_local.conf" >/dev/null 2>&1
 fi
