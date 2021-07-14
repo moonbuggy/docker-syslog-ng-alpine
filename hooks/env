@@ -130,16 +130,17 @@ python_get_module_from_string () {
 	IFS='-' read -r -a input_array <<< "${1}"
 
 	mod_namever=''
+
 	for value in "${input_array[@]}"; do
 		case "${value}" in
-			py[0-9].[0-9])
+			py[0-9]*)
 				mod_pyver="${value/py/}"
 				break
 				;;
 			amd64|arm64v8|armv6|armv7|386|ppc64le|s390x)
 				break
 				;;
-			*.[0-9].[0-9])
+			*[0-9])
 				mod_ver="${value//[[:alpha:]]/}"
 				;;&
 			*)
@@ -149,7 +150,7 @@ python_get_module_from_string () {
 	done
 
 	mod_namever="${mod_namever/#-/}"
-	mod_longname="${mod_namever%%[0-9].*}"
+	mod_longname="${mod_namever%%[0-9.]*}"
 
 	case "${mod_longname##*-}" in
 		libressl|openssl)

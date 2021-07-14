@@ -12,7 +12,7 @@ ARG QEMU_DIR
 ARG QEMU_ARCH=""
 COPY _dummyfile "${QEMU_DIR}/qemu-${QEMU_ARCH}-static*" /usr/bin/
 
-ARG SYSLOG_NG_VERSION='3.30'
+ARG SYSLOG_NG_VERSION="3.30"
 RUN apk add --no-cache \
 		libdbi-drivers \
 		syslog-ng=~${SYSLOG_NG_VERSION} \
@@ -25,7 +25,7 @@ RUN apk add --no-cache \
 COPY ./etc/ /etc/
 COPY ./healthcheck.sh /
 
-RUN rm -f "/usr/bin/qemu-${QEMU_ARCH}-static" >/dev/null 2>&1
+RUN rm -f _dummyfile "/usr/bin/qemu-${QEMU_ARCH}-static" >/dev/null 2>&1
 
 
 ## drop the QEMU binaries

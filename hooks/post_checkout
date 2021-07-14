@@ -23,7 +23,7 @@ case "${DOCKER_TAG##*-}" in
 		[ -z "${TARGET_TAG+set}" ] && \
 			TARGET_TAG="${DOCKER_TAG%-*}"
 		add_param "${DOCKER_TAG##*-}" 'BUILD_ARCH'
-		[ -z "${SINGLE_ARCH_BUILD}" ] && SINGLE_ARCH_BUILD=1
+		[ -z "${SINGLE_ARCH_BUILD+set}" ] && SINGLE_ARCH_BUILD=1
 		;;
 	*)
 		[ -z "${TARGET_TAG+set}" ] && \
@@ -125,6 +125,10 @@ for arch in ${build_arches}; do
   platforms="${platforms},${!platform_string}"
 done
 add_print_param "${platforms:1}" 'platforms' 'Platforms'
+
+[ -z "${platforms}" ] \
+	&& echo "No platforms found. Exiting." \
+	&& exit 1
 
 add_print_param "${SOURCE_IMAGE}" 'SOURCE_IMAGE' 'Source image'
 

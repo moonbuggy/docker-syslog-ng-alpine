@@ -21,7 +21,10 @@ echo
 	arch_tags=("${!TARGET_ARCH_TAG}")
 
 	EXTRA_ARCH_TAGS="${arch}_EXTRA_ARCH_TAGS"
-	[ -n "${!EXTRA_ARCH_TAGS}" ] && arch_tags+=("${!EXTRA_ARCH_TAGS}")
+#	[ -n "${!EXTRA_ARCH_TAGS}" ] && arch_tags+=(${!EXTRA_ARCH_TAGS})
+	for extra_tag in ${!EXTRA_ARCH_TAGS}; do
+		arch_tags+=("${extra_tag}")
+	done
 
 	[ -z "${PUSH_ALL_TAGS+set}" ] \
 		&& echo "--- push (${arch_tags[*]}) ---" \

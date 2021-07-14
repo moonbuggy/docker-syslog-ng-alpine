@@ -1,0 +1,9 @@
+destination d_syslog {
+    SYSLOG_DRIVER("SYSLOG_HOST" transport("SYSLOG_TRANSPORT") port("SYSLOG_PORT"));
+};
+
+log {
+	source(s_local);
+	source(s_network);
+	destination(d_syslog);
+};
