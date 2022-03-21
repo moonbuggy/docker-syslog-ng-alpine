@@ -1,20 +1,23 @@
 #!/usr/bin/with-contenv /bin/sh
+# shellcheck shell=ash
 
 CONFD='/etc/syslog-ng/conf.d'
 TEMPLATES='/etc/syslog-ng/templates'
 
-log () { echo "[${0##*/}] $@"; }
+log () { echo "[${0##*/}] $*"; }
+
+SQL_CONF="${CONFD}/d_sql.conf"
+SYSLOG_CONF="${CONFD}/d_syslog.conf"
+
 
 # enable and configure the SQL destination if SQL_* environment variables are set
-if $(env | grep -q SQL); then
-	CONF_FILE="${CONFD}/d_sql.conf"
-
+if env | grep -q SQL; then
 	[ -z ${SQL_PORT+set} ] && SQL_PORT='3306'
-	log "Logging to SQL ENABLED. (${SQL_HOST}:${SQL_PORT})"
+	log "Logging to SQL ENABLED. (${SQL_HOST:-'none'}:${SQL_PORT})"
 
-	cp -f "${TEMPLATES}/d_sql.template" "${CONF_FILE}"
+	cp -f "${TEMPLATES}/d_sql.template" "${SQL_CONF}"
 
-	sed -i "${CONF_FILE}" \
+	sed -i "${SQL_CONF}" \
 		-e "s/SQL_HOST/${SQL_HOST}/" \
 		-e "s/SQL_PORT/${SQL_PORT}/" \
 		-e "s/SQL_USER/${SQL_USER}/" \
@@ -24,32 +27,30 @@ if $(env | grep -q SQL); then
 # otherwise make sure the SQL destination is disabled
 else
 	log "Logging to SQL DISABLED."
-  [ -f "${CONF_FILE}" ] && rm -f "${CONF_FILE}" >/dev/null 2>&1
+  [ -f "${SQL_CONF}" ] && rm -f "${SQL_CONF}" >/dev/null 2>&1
 fi
 
 # enable and configure the syslog destination if SYSLOG_* environment variables are set
-if $(env | grep -q SYSLOG); then
-	CONF_FILE="${CONFD}/d_syslog.conf"
-
+if env | grep -q SYSLOG; then
 	[ -z ${SYSLOG_PORT+set} ] && SYSLOG_PORT='514'
 	[ -z ${SYSLOG_FORMAT+set} ] && SYSLOG_FORMAT='RFC3164'
 	[ -z ${SYSLOG_FORMAT+set} ] && SYSLOG_TRANSPORT='UDP'
-	log "Logging to syslog ENABLED. (${SYSLOG_HOST}:${SYSLOG_PORT}, ${SYSLOG_FORMAT} via ${SYSLOG_TRANSPORT})"
+	log "Logging to syslog ENABLED. (${SYSLOG_HOST:-'none'}:${SYSLOG_PORT}, ${SYSLOG_FORMAT} via ${SYSLOG_TRANSPORT})"
 
-	cp -f "${TEMPLATES}/d_syslog.template" "${CONF_FILE}"
+	cp -f "${TEMPLATES}/d_syslog.template" "${SYSLOG_CONF}"
 
 	case ${SYSLOG_FORMAT} in
 		*5424*) SYSLOG_DRIVER='syslog' ;;
 		*) SYSLOG_DRIVER='network' ;;
 	esac
-	
+
 	SYSLOG_TRANSPORT="$(echo "${SYSLOG_TRANSPORT}" | tr '[:upper:]' '[:lower:]')"
 	case ${SYSLOG_TRANSPORT} in
-		udp|tcp) break ;;
+		udp|tcp) ;;
 		*) echo "Error. Invalid transport: ${SYSLOG_TRANSPORT}" ;;
 	esac
 
-	sed -i "${CONF_FILE}" \
+	sed -i "${SYSLOG_CONF}" \
 		-e "s/SYSLOG_HOST/${SYSLOG_HOST}/" \
 		-e "s/SYSLOG_PORT/${SYSLOG_PORT}/" \
 		-e "s/SYSLOG_DRIVER/${SYSLOG_DRIVER}/" \
@@ -58,7 +59,7 @@ if $(env | grep -q SYSLOG); then
 # otherwise make sure the SQL destination is disabled
 else
 	log "Logging to syslog DISABLED."
-  [ -f "${CONF_FILE}" ] && rm -f "${CONF_FILE}" >/dev/null 2>&1
+  [ -f "${SYSLOG_CONF}" ] && rm -f "${SYSLOG_CONF}" >/dev/null 2>&1
 fi
 
 
