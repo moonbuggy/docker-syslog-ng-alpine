@@ -1,14 +1,32 @@
 #!/usr/bin/with-contenv /bin/sh
-# shellcheck shell=ash
+#shellcheck shell=ash
 
 CONFD='/etc/syslog-ng/conf.d'
 TEMPLATES='/etc/syslog-ng/templates'
 
-log () { echo "[${0##*/}] $*"; }
+#log () { echo "[${0##*/}] $*"; }
+log () { echo "syslog-ng-init: info: $*"; }
 
+OPTIONS_CONF="${CONFD}/options.conf"
 SQL_CONF="${CONFD}/d_sql.conf"
 SYSLOG_CONF="${CONFD}/d_syslog.conf"
 
+# fix the version in the config file
+sed -E "s|^@version:.*|@version: $(echo ${SYSLOG_NG_VERSION} | cut -d'.' -f1,2)|" \
+	-i /etc/syslog-ng/syslog-ng.conf
+
+# configure stats frequency
+[ -z ${STATS_FREQUENCY+set} ] && STATS_FREQUENCY='3600'
+case ${SYSLOG_NG_VERSION:-4} in
+	3*)	statsfreq_string="stats_freq(${STATS_FREQUENCY});"	;;
+	*)	statsfreq_string="stats(freq(${STATS_FREQUENCY}));"	;;
+esac
+
+cp -f "${TEMPLATES}/options.template" "${OPTIONS_CONF}"
+sed -i "${OPTIONS_CONF}" \
+	-e "s/STATS_FREQ/${statsfreq_string}/"
+
+log "Statistics frequency: ${STATS_FREQUENCY}"
 
 # enable and configure the SQL destination if SQL_* environment variables are set
 if env | grep -q SQL; then
@@ -31,7 +49,7 @@ else
 fi
 
 # enable and configure the syslog destination if SYSLOG_* environment variables are set
-if env | grep -q SYSLOG; then
+if env | grep -q SYSLOG | grep -qv SYSLOG_NG_VERSION; then
 	[ -z ${SYSLOG_PORT+set} ] && SYSLOG_PORT='514'
 	[ -z ${SYSLOG_FORMAT+set} ] && SYSLOG_FORMAT='RFC3164'
 	[ -z ${SYSLOG_FORMAT+set} ] && SYSLOG_TRANSPORT='UDP'

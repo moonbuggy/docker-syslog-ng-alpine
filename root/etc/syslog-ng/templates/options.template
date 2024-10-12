@@ -2,4 +2,5 @@ options {
 	use_dns(yes);
 	use_fqdn(yes);
 	keep_hostname(yes);
+	STATS_FREQ
 };

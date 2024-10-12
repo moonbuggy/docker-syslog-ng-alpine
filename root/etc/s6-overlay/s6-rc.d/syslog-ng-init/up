@@ -1,0 +1,2 @@
+with-contenv
+exec /etc/s6-overlay/s6-rc.d/syslog-ng-init/syslog-ng-init.sh
